@@ -81,6 +81,14 @@ function setPageGateway(
   page.gateway.applySnapshot(snapshot(client, connected), { initial: false, sourceChanged });
 }
 
+function createOverviewPage(client: GatewayBrowserClient): TestAgentsPage {
+  const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
+  page.routeData = { panel: "overview" } as AgentsRouteData;
+  setPageGateway(page, client);
+  page.agentsSelectedId = "main";
+  return page;
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((next) => {
@@ -361,10 +369,7 @@ describe("AgentsPage gateway lifecycle", () => {
       },
     ];
     const request = vi.fn(async () => ({ models }));
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     page.loadActivePanelData();
@@ -384,10 +389,7 @@ describe("AgentsPage gateway lifecycle", () => {
     const request = vi.fn(async (_method: string, params?: { agentId?: string }) => ({
       models: params?.agentId === "worker" ? workerModels : defaultModels,
     }));
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     await waitForFast(() => expect(page.chatModelCatalog).toEqual(defaultModels));
@@ -417,10 +419,7 @@ describe("AgentsPage gateway lifecycle", () => {
         ? Promise.resolve({ models: workerModels })
         : defaultResult.promise,
     );
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     page.agentsSelectedId = "worker";
@@ -443,10 +442,7 @@ describe("AgentsPage gateway lifecycle", () => {
       .fn()
       .mockResolvedValueOnce({ models: oldModels })
       .mockResolvedValueOnce({ models: nextModels });
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     await waitForFast(() => expect(page.chatModelCatalog).toEqual(oldModels));
@@ -471,10 +467,7 @@ describe("AgentsPage gateway lifecycle", () => {
         .fn()
         .mockResolvedValueOnce({ models: oldModels })
         .mockResolvedValueOnce({ models: nextModels });
-      const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-      page.routeData = { panel: "overview" } as AgentsRouteData;
-      setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-      page.agentsSelectedId = "main";
+      const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
       page.loadActivePanelData();
       await vi.waitFor(() => expect(page.chatModelCatalog).toEqual(oldModels));
@@ -496,10 +489,7 @@ describe("AgentsPage gateway lifecycle", () => {
     const oldResult = deferred<{ models: ModelCatalogEntry[] }>();
     const oldRequest = vi.fn(() => oldResult.promise);
     const nextRequest = vi.fn(async () => ({ models: nextModels }));
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request: oldRequest } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request: oldRequest } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     page.gateway.invalidate();
@@ -525,10 +515,7 @@ describe("AgentsPage gateway lifecycle", () => {
       .fn()
       .mockReturnValueOnce(oldResult.promise)
       .mockResolvedValueOnce({ models: nextModels });
-    const page = document.createElement("openclaw-agents-page") as TestAgentsPage;
-    page.routeData = { panel: "overview" } as AgentsRouteData;
-    setPageGateway(page, { request } as unknown as GatewayBrowserClient);
-    page.agentsSelectedId = "main";
+    const page = createOverviewPage({ request } as unknown as GatewayBrowserClient);
 
     page.loadActivePanelData();
     page.gateway.invalidate();
