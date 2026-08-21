@@ -9,7 +9,7 @@ const MODEL_CATALOG_REQUEST_TIMEOUT_MS = 30_000;
 
 export async function revalidateModels(
   client: GatewayBrowserClient,
-  opts: ModelCatalogScope & { startupRetryWindowMs?: number },
+  opts: ModelCatalogScope & { refresh?: boolean; startupRetryWindowMs?: number },
 ): Promise<ModelCatalogEntry[]> {
   const retryWindowMs = opts.startupRetryWindowMs;
   if (retryWindowMs === undefined) {

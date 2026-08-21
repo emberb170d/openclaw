@@ -178,6 +178,12 @@ describe("AgentsPage model catalog", () => {
     page.ensureModelCatalog({ refresh: true });
     await vi.waitFor(() => expect(page.chatModelCatalog).toEqual(nextModels));
     expect(request).toHaveBeenCalledTimes(2);
+    expect(request).toHaveBeenNthCalledWith(2, "models.list", {
+      agentId: "main",
+      preparedOnly: true,
+      refresh: true,
+      view: "configured",
+    });
   });
 
   it("revalidates an expired prepared catalog on overview re-entry", async () => {

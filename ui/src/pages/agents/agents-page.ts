@@ -605,7 +605,11 @@ class AgentsPage
     const request = { client, generation, agentId };
     this.chatModelCatalogRequest = request;
     this.chatModelCatalogError = null;
-    void revalidateModels(client, { agentId, preparedOnly: true })
+    void revalidateModels(client, {
+      agentId,
+      preparedOnly: true,
+      ...(options.refresh ? { refresh: true } : {}),
+    })
       .then((models) => {
         if (this.isCurrentRequest(client, generation, agentId)) {
           this.chatModelCatalog = models;
