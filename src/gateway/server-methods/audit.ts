@@ -28,6 +28,10 @@ import { assertValidParams } from "./validation.js";
 const DEFAULT_AUDIT_LIST_LIMIT = 100;
 const MAX_AUDIT_LIST_LIMIT = 500;
 
+function isOwnerDecisionCursor(value: string): boolean {
+  return parsePositiveAuditCursor(value) === null && isExecutionDecisionCursor(value);
+}
+
 /** Preserve the shipped audit.list result shape for run/tool-only clients. */
 function mapLegacyAuditEvent(
   event: AgentRunAuditEventRecord | ToolActionAuditEventRecord,
@@ -177,9 +181,7 @@ export const auditHandlers: GatewayRequestHandlers = {
       typeof params.runId !== "string" ||
       (params.executionCursor === decisionCursor &&
         decisionCursor !== undefined &&
-        (decisionCursor.startsWith("a:") ||
-          decisionCursor.startsWith("m:") ||
-          decisionCursor.startsWith("g:")))
+        isOwnerDecisionCursor(decisionCursor))
         ? undefined
         : parsePositiveAuditCursor(params.executionCursor);
     if (
