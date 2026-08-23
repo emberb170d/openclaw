@@ -1,5 +1,6 @@
 import type { SessionsCreateResult } from "../../../../packages/gateway-protocol/src/index.js";
 import type { GatewayBrowserClient } from "../../api/gateway.ts";
+import type { SessionToolOverrides } from "./patch.ts";
 
 export type SessionCreateOutcome = {
   key: string;
@@ -23,6 +24,7 @@ export type SessionCreateParams = {
   model?: string;
   contextWindow?: string;
   thinkingLevel?: string;
+  toolOverrides?: SessionToolOverrides;
   incognito?: boolean;
   worktree?: boolean;
   /** Base ref for the managed worktree branch; requires worktree. */

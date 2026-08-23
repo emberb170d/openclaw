@@ -24,4 +24,24 @@ describe("sessions.create schema", () => {
   it("rejects unknown visibility values", () => {
     expect(validateSessionsCreateParams({ agentId: "main", visibility: "private" })).toBe(false);
   });
+
+  it("accepts initial session tool overrides", () => {
+    expect(
+      validateSessionsCreateParams({
+        agentId: "main",
+        toolOverrides: {
+          mcpServers: { github: false },
+          skills: { release: true },
+          webSearch: false,
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it.each([null, { webSearch: "yes" }, { skills: { release: "yes" } }, { unknown: true }])(
+    "rejects malformed initial tool overrides %#",
+    (toolOverrides) => {
+      expect(validateSessionsCreateParams({ agentId: "main", toolOverrides })).toBe(false);
+    },
+  );
 });

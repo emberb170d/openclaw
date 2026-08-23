@@ -8,6 +8,7 @@ import {
   getChatAttachmentDataUrl,
   registerChatAttachmentPayload,
 } from "../chat/attachment-payload-store.ts";
+import { NewSessionCapabilityController } from "./capability-controller.ts";
 import { buildDraftSessionCreateParams } from "./create-params.ts";
 import { DraftGatewayState } from "./draft-gateway-state.ts";
 import { DraftPlaceBrowser } from "./draft-place-browser.ts";
@@ -162,16 +163,19 @@ function createDraftFixture(options: FixtureOptions = {}) {
     },
   );
   const requestUpdate = vi.fn();
+  const capabilities = new NewSessionCapabilityController(requestUpdate);
   const flow = new DraftSubmissionFlow(
     gateway,
     place,
+    capabilities,
     () => ({ context, data: options.data, isConnected: phase === "connected" }),
     { requestUpdate, closeTransientUi: vi.fn() },
   );
+  capabilities.setMutationCallback(flow.retireStartedSession);
   gateway.synchronize(context.gateway);
   place.setAgentsHydrated(true);
   place.adoptAgentDefaults();
-  return { context, flow, gateway, place, request, requestUpdate };
+  return { capabilities, context, flow, gateway, place, request, requestUpdate };
 }
 
 function registerTextPayload(id: string) {
@@ -264,6 +268,7 @@ describe("DraftSubmissionFlow submit gates", () => {
     });
     let resolveBranches!: (value: unknown) => void;
     const fixture = createDraftFixture({
+      scopes: ["operator.admin", "operator.read", "operator.write"],
       agents: [
         {
           id: "main",
@@ -417,6 +422,11 @@ describe("DraftSubmissionFlow", () => {
       retire: ({ flow }: ReturnType<typeof createDraftFixture>) => flow.setVisibility("draft"),
     },
     {
+      scenario: "the requested session capabilities change",
+      retire: ({ capabilities }: ReturnType<typeof createDraftFixture>) =>
+        capabilities.setToolOverrides({ skills: { release: false } }),
+    },
+    {
       scenario: "another session becomes selected",
       retire: ({ context }: ReturnType<typeof createDraftFixture>) => {
         context.gateway.snapshot.sessionKey = "agent:main:dashboard:elsewhere";
@@ -437,6 +447,7 @@ describe("DraftSubmissionFlow", () => {
     },
   ])("never retries a committed session after $scenario", async ({ retire }) => {
     const fixture = createDraftFixture({
+      scopes: ["operator.admin", "operator.read", "operator.write"],
       agents: [
         { id: "main", workspace: "/workspace", model: { primary: "openai/test" } },
         { id: "other", workspace: "/workspace", model: { primary: "openai/test" } },
@@ -690,6 +701,7 @@ describe("DraftSubmissionFlow", () => {
     const flow = new DraftSubmissionFlow(
       gateway,
       place,
+      new NewSessionCapabilityController(vi.fn()),
       () => ({ context, data: undefined, isConnected: true }),
       { requestUpdate: vi.fn(), closeTransientUi: vi.fn() },
     );
@@ -878,6 +890,7 @@ describe("DraftSubmissionFlow", () => {
     const flow = new DraftSubmissionFlow(
       gateway,
       place,
+      new NewSessionCapabilityController(vi.fn()),
       () => ({ context, data: undefined, isConnected: true }),
       { requestUpdate: vi.fn(), closeTransientUi: vi.fn() },
     );
