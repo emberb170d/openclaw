@@ -465,10 +465,7 @@
 }
 
 .workboard-board {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(292px, 1fr);
-  grid-template-columns: none;
+  display: flex;
   gap: 10px;
   flex: 1;
   min-height: 0;
@@ -479,34 +476,43 @@
 }
 
 .workboard-board--compact {
-  grid-auto-columns: minmax(262px, 1fr);
+  --workboard-column-width: 262px;
 }
 
 .workboard-board--compact .workboard-column {
+  flex-basis: var(--workboard-column-width);
   min-width: 262px;
 }
 
 .workboard-board--comfortable {
-  grid-auto-columns: minmax(312px, 1fr);
+  --workboard-column-width: 312px;
 }
 
 .workboard-board--comfortable .workboard-column {
+  flex-basis: var(--workboard-column-width);
   min-width: 312px;
 }
 
 .workboard-board--single-column {
-  grid-auto-columns: minmax(292px, min(50%, 720px));
+  --workboard-single-column-max: 720px;
+}
+
+.workboard-board--single-column .workboard-column:not(.workboard-column--collapsed) {
+  flex-grow: 0;
+  width: min(50%, var(--workboard-single-column-max));
+  max-width: var(--workboard-single-column-max);
 }
 
 .workboard-board--compact.workboard-board--single-column {
-  grid-auto-columns: minmax(262px, min(50%, 680px));
+  --workboard-single-column-max: 680px;
 }
 
 .workboard-board--comfortable.workboard-board--single-column {
-  grid-auto-columns: minmax(312px, min(50%, 760px));
+  --workboard-single-column-max: 760px;
 }
 
 .workboard-column {
+  flex: 1 0 292px;
   min-height: 0;
   background: color-mix(in srgb, var(--panel-strong) 34%, var(--panel) 66%);
   border: 1px solid color-mix(in srgb, var(--border-strong) 52%, transparent);
@@ -516,6 +522,12 @@
   min-width: 292px;
   overflow: hidden;
   scroll-snap-align: start;
+}
+
+.workboard-board .workboard-column--collapsed {
+  flex: 0 0 48px;
+  width: 48px;
+  min-width: 48px;
 }
 
 .workboard-column--drop {
@@ -532,21 +544,68 @@
   box-shadow: inset 0 2px 0 color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+.workboard-column__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.workboard-column__collapse {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  color: var(--muted);
+  opacity: 0;
+  touch-action: manipulation;
+  transition:
+    color 120ms ease,
+    opacity 120ms ease;
+}
+
+.workboard-column__header:hover .workboard-column__collapse,
+.workboard-column__header:focus-within .workboard-column__collapse {
+  opacity: 1;
+}
+
+.workboard-column__collapse:hover,
+.workboard-column__collapse:focus-visible {
+  color: var(--text);
+}
+
+.workboard-column__collapse-icon {
+  display: inline-flex;
+  transform: scaleX(-1);
+}
+
+.workboard-column__collapse:focus-visible,
+.workboard-column__rail:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
 .workboard-column--ready .workboard-column__header,
-.workboard-column--scheduled .workboard-column__header {
+.workboard-column--ready .workboard-column__rail,
+.workboard-column--scheduled .workboard-column__header,
+.workboard-column--scheduled .workboard-column__rail {
   box-shadow: inset 0 2px 0 color-mix(in srgb, var(--warn) 38%, transparent);
 }
 
 .workboard-column--running .workboard-column__header,
-.workboard-column--review .workboard-column__header {
+.workboard-column--running .workboard-column__rail,
+.workboard-column--review .workboard-column__header,
+.workboard-column--review .workboard-column__rail {
   box-shadow: inset 0 2px 0 color-mix(in srgb, var(--accent-2) 38%, transparent);
 }
 
-.workboard-column--blocked .workboard-column__header {
+.workboard-column--blocked .workboard-column__header,
+.workboard-column--blocked .workboard-column__rail {
   box-shadow: inset 0 2px 0 color-mix(in srgb, var(--danger) 40%, transparent);
 }
 
-.workboard-column--done .workboard-column__header {
+.workboard-column--done .workboard-column__header,
+.workboard-column--done .workboard-column__rail {
   box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ok) 40%, transparent);
 }
 
@@ -557,7 +616,7 @@
   text-transform: uppercase;
 }
 
-.workboard-column__header span {
+.workboard-column__count {
   min-width: 24px;
   border-radius: 999px;
   padding: 2px 7px;
@@ -565,6 +624,68 @@
   color: var(--text);
   font-size: 0.76rem;
   text-align: center;
+}
+
+.workboard-column__rail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 100%;
+  border: 0;
+  padding: 10px 0;
+  background: transparent;
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--accent) 30%, transparent);
+  color: color-mix(in srgb, var(--text) 72%, var(--muted));
+  cursor: var(--cursor-action);
+  touch-action: manipulation;
+  writing-mode: vertical-rl;
+}
+
+.workboard-column__rail:hover {
+  background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+  color: var(--text);
+}
+
+.workboard-column__rail-title {
+  min-height: 0;
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.workboard-column__rail .workboard-column__count {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 24px;
+  padding: 7px 2px;
+}
+
+.workboard-column__rail-icon {
+  display: inline-flex;
+  margin-top: auto;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.workboard-column__rail:hover .workboard-column__rail-icon,
+.workboard-column__rail:focus-visible .workboard-column__rail-icon {
+  opacity: 1;
+}
+
+.workboard-column__rail-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (hover: none) {
+  .workboard-column__collapse,
+  .workboard-column__rail-icon {
+    opacity: 1;
+  }
 }
 
 .workboard-column__cards {
@@ -1546,34 +1667,50 @@ openclaw-workboard-card-dashboard {
   }
 
   .workboard-board {
-    grid-auto-flow: row;
-    grid-auto-columns: unset;
-    grid-template-columns: minmax(0, 1fr);
+    flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
     scroll-snap-type: none;
   }
 
-  .workboard-board--compact,
-  .workboard-board--comfortable {
-    grid-auto-columns: unset;
-  }
-
-  .workboard-board--single-column,
-  .workboard-board--compact.workboard-board--single-column,
-  .workboard-board--comfortable.workboard-board--single-column {
-    grid-auto-columns: unset;
-  }
-
   .workboard-column,
   .workboard-board--compact .workboard-column,
   .workboard-board--comfortable .workboard-column {
+    flex: none;
     width: 100%;
     min-height: auto;
     min-width: 0;
     max-width: 100%;
     overflow: visible;
     scroll-snap-align: none;
+  }
+
+  .workboard-board .workboard-column--collapsed {
+    flex-basis: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .workboard-board--single-column .workboard-column:not(.workboard-column--collapsed) {
+    width: 100%;
+    max-width: none;
+  }
+
+  .workboard-column__rail {
+    min-height: 44px;
+    padding: 0 11px;
+    writing-mode: horizontal-tb;
+  }
+
+  .workboard-column__rail .workboard-column__count {
+    min-width: 24px;
+    min-height: 0;
+    padding: 2px 7px;
+  }
+
+  .workboard-column__rail-icon {
+    margin-top: 0;
+    margin-left: auto;
   }
 
   .workboard-column__cards {
