@@ -28,7 +28,6 @@ import { renderOfflineSidebarStatus } from "./session-row-badges.ts";
 import type { SettingsSaveIndicatorProps } from "./settings-save-indicator.ts";
 import "./settings-save-indicator.ts";
 import "./sidebar-build-chip.ts";
-import "./sidebar-attention.ts";
 
 type SettingsSidebarProps = {
   basePath: string;
@@ -324,11 +323,6 @@ export function renderSettingsSidebar(props: SettingsSidebarProps) {
               `,
             )}
       </nav>
-      <openclaw-sidebar-attention
-        .onNavigate=${props.onNavigate}
-        .watchUpdateProgress=${props.watchUpdateProgress}
-        .onRefresh=${props.onRefresh}
-      ></openclaw-sidebar-attention>
       <footer class="settings-sidebar__footer">
         ${props.offline
           ? renderOfflineSidebarStatus({
