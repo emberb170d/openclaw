@@ -281,7 +281,7 @@ export function buildGatewaySessionRow(params: {
     // titles leaks account names into the sidebar while the generated title is pending.
     (isDashboardSession ? undefined : originLabel);
   const sessionAgentId = normalizeAgentId(
-    parsedAgent?.agentId ?? params.agentId ?? resolveSessionStoreAgentId(cfg, key),
+    resolveSessionStoreAgentId(cfg, key) ?? parsedAgent?.agentId ?? params.agentId,
   );
   const skipTranscriptUsage = params.skipTranscriptUsageFallback === true;
   const rowContext = params.rowContext;

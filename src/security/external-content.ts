@@ -233,7 +233,7 @@ function foldMarkerTextWithIndexMap(input: string): FoldedMarkerMatch {
   return { folded, originalStartByFoldedIndex, originalEndByFoldedIndex };
 }
 
-function replaceMarkers(content: string): string {
+export function replaceMarkers(content: string): string {
   const { folded, originalStartByFoldedIndex, originalEndByFoldedIndex } =
     foldMarkerTextWithIndexMap(content);
   // Intentionally catch whitespace-delimited spoof variants (space, tab, newline) in addition

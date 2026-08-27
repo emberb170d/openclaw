@@ -12,6 +12,7 @@ import {
 import type { ToolLoopDetectionConfig } from "../config/types.tools.js";
 import type { SessionState, ToolCallRecord } from "../logging/diagnostic-session-state.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
+import { replaceMarkers } from "../security/external-content.js";
 import { isPlainObject } from "../utils.js";
 import { isMessagingToolSendAction } from "./embedded-agent-messaging.js";
 import {
@@ -124,7 +125,7 @@ function extractTextContent(result: unknown): string {
       (entry): entry is { type: string; text: string } =>
         isPlainObject(entry) && typeof entry.type === "string" && typeof entry.text === "string",
     )
-    .map((entry) => entry.text)
+    .map((entry) => replaceMarkers(entry.text))
     .join("\n")
     .trim();
 }
