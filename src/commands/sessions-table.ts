@@ -55,6 +55,7 @@ export type SessionDisplayRow = {
   modelOverride?: string;
   contextTokens?: number;
   runtimePolicySessionKey?: string;
+  category?: string;
 };
 
 export const SESSION_KEY_PAD = 26;
@@ -100,6 +101,7 @@ export function toSessionDisplayRow(key: string, entry: SessionEntry): SessionDi
     totalTokens: entry?.totalTokens,
     totalTokensFresh: entry?.totalTokensFresh,
     totalTokensVersion: entry?.totalTokensVersion,
+    category: entry?.category,
     model: entry?.model,
     modelProvider: entry?.modelProvider,
     providerOverride: entry?.providerOverride,
