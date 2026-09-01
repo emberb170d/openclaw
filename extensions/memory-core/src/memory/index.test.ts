@@ -80,7 +80,7 @@ describe("memory index", () => {
     const vector = Reflect.get(manager, "vector") as VectorState;
     vector.available = true;
     vector.dims = 4;
-    Reflect.set(manager, "vectorReady", Promise.resolve(true));
+    Reflect.set(Reflect.get(manager, "database"), "vectorReady", Promise.resolve(true));
 
     await expect(
       Reflect.apply(Reflect.get(manager, "runInPlaceReindex"), manager, [
@@ -354,7 +354,7 @@ describe("memory index", () => {
     }
   });
 
-  it("reindexes legacy curated provenance before the first automatic candidate read", async () => {
+  it("withholds legacy curated candidates until background provenance repair succeeds", async () => {
     const projectKey = "github.com/openclaw/openclaw";
     await fs.writeFile(
       path.join(fixture.paths.workspace, "MEMORY.md"),
@@ -414,6 +414,13 @@ describe("memory index", () => {
         upgradedManager as unknown as { runSync: (params?: MemorySyncParams) => Promise<void> },
         "runSync",
       );
+      await expect(
+        Promise.all([
+          upgradedManager.listCuratedProjectCandidates({ activeProjectKeys: [projectKey] }),
+          upgradedManager.listTriggerCandidates({ activeProjectKeys: [projectKey] }),
+        ]),
+      ).resolves.toEqual([[], []]);
+      await upgradedManager.sync({ reason: "test-repair-complete" });
       const [projectCandidates, triggerCandidates] = await Promise.all([
         upgradedManager.listCuratedProjectCandidates({ activeProjectKeys: [projectKey] }),
         upgradedManager.listTriggerCandidates({ activeProjectKeys: [projectKey] }),
@@ -2225,6 +2232,17 @@ describe("memory index", () => {
     await manager.sync({ reason: "test" });
 
     expect(providerFixture.embedBatchInputCalls).toBeGreaterThan(0);
+    expect(
+      providerFixture.embeddedBatchInputs
+        .flat()
+        .flatMap((input) =>
+          typeof input === "string"
+            ? []
+            : (input.parts ?? []).flatMap((part) =>
+                part.type === "inline-data" ? [`${part.mimeType}:${part.data}`] : [],
+              ),
+        ),
+    ).toEqual(expect.arrayContaining(["image/png:cG5n", "audio/wav:d2F2"]));
 
     const db = Reflect.get(manager, "db") as DatabaseSync;
     const indexedMediaPaths = () =>
